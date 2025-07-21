@@ -1,0 +1,42 @@
+# Example configuration file for applications using python_utils validation
+# This demonstrates the validation_utils.AppConfig model
+
+# Email notification settings
+to_email:
+  - admin@example.com
+  - backup-admin@example.com
+
+# Pushover notification settings (-2 to +2)
+pushover_priority: -1  # Low priority for routine notifications
+
+# Logging configuration
+log_level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_file: log/application.log
+
+# Storage requirements
+min_free_space: 100 GB  # Minimum free space required
+
+# Backup definitions
+backup_check_list:
+  - name: database
+    backup_dir: /mnt/backups/database
+    days: 1                # Check files modified within 1 day
+    min_size: 5 GB         # Minimum expected backup size
+
+  - name: application_files
+    backup_dir: /mnt/backups/app_files
+    days: 7                # Weekly backup window
+    min_size: 1 GB
+
+  - name: configuration
+    backup_dir: /mnt/backups/config
+    days: 1
+    min_size: 50 MB
+
+  - name: logs
+    backup_dir: /mnt/backups/logs
+    days: 1
+    min_size: 100 KB       # Small but must exist
+
+# Size units supported: B, KB, MB, GB, TB (case insensitive)
+# Examples: "1.5 GB", "500MB", "10 kb", "2TB"
