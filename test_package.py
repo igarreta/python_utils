@@ -9,7 +9,8 @@ def test_imports():
     print("Testing imports...")
     
     try:
-        from python_utils import (
+        # Import from current package
+        from . import (
             parse_size_to_bytes,
             bytes_to_human_readable,
             EmailNotifier, 
