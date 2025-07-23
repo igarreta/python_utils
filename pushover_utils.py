@@ -37,36 +37,53 @@ class PushoverNotifier:
         self, 
         title: str = "Backup Monitor", 
         env_file: Union[str, Path] = "~/etc/pushover.env",
-        device: str = "default",
+        device: Optional[str] = None,
         logger: Optional[logging.Logger] = None
     ) -> None:
         """Initialize Pushover client with credentials from environment file.
         
         Args:
             title: Default title for notifications
-            env_file: Path to environment file containing PUSHOVER_TOKEN and PUSHOVER_USER
-            device: Target device name (optional)
+            env_file: Path to environment file containing PUSHOVER_TOKEN, PUSHOVER_USER, and DEFAULT_DEVICE
+            device: Target device name (optional). If None, uses DEFAULT_DEVICE from env_file, then "default"
             logger: Optional logger instance for error reporting
+            
+        Device Selection Priority:
+            1. Explicit device parameter (if provided)
+            2. DEFAULT_DEVICE from environment file (if present)
+            3. Fallback to "default"
             
         Note:
             This constructor never raises exceptions. Invalid configurations are logged
-            and will cause send() to return False.
+            and will cause send() to return False. DEFAULT_DEVICE supports comma-separated
+            device lists for sending to multiple devices.
         """
         self.logger = logger or logging.getLogger(__name__)
         
         # Auto-correct title
         self.title = self._validate_title(title)
-        self.device = device
         
         # Load credentials safely
         self._valid_credentials = False
         self.token = "invalid_token"
         self.user = "invalid_user"
+        self.default_device = None  # Will be loaded from environment
         
         try:
             self._load_credentials(env_file)
         except Exception as e:
             self.logger.error(f"Failed to load Pushover credentials: {e}")
+        
+        # Set device with precedence: parameter > DEFAULT_DEVICE > "default"
+        if device is not None:
+            self.device = device
+            self.logger.debug(f"Using explicit device parameter: {device}")
+        elif self.default_device is not None:
+            self.device = self.default_device
+            self.logger.debug(f"Using DEFAULT_DEVICE from environment: {self.default_device}")
+        else:
+            self.device = "default"
+            self.logger.debug("Using fallback device: default")
         
         if self._valid_credentials:
             self.logger.info("Pushover client initialized successfully")
@@ -74,7 +91,7 @@ class PushoverNotifier:
             self.logger.warning("Pushover client initialized with invalid credentials - send() will fail")
     
     def _load_credentials(self, env_file: Union[str, Path]) -> None:
-        """Load credentials from environment file using dotenv."""
+        """Load credentials and default device from environment file using dotenv."""
         # Expand user path
         env_path = os.path.expanduser(str(env_file))
         
@@ -98,6 +115,15 @@ class PushoverNotifier:
         if not user or len(user) != 30:
             self.logger.error("Invalid PUSHOVER_USER format (expected 30 characters)")  
             return
+        
+        # Load default device(s) - can be single device or comma-separated list
+        default_device_raw = os.environ.get('DEFAULT_DEVICE')
+        if default_device_raw:
+            # Clean and parse device list (remove spaces, split by comma)
+            self.default_device = ','.join([d.strip() for d in default_device_raw.split(',') if d.strip()])
+            self.logger.debug(f"Loaded DEFAULT_DEVICE: {self.default_device}")
+        else:
+            self.logger.debug("No DEFAULT_DEVICE found in environment")
         
         self.token = token
         self.user = user
@@ -207,6 +233,16 @@ class PushoverNotifier:
             "priority": priority,
             "device": self.device
         }
+        
+        # Log device targeting info
+        if self.device and self.device != "default":
+            device_count = len([d for d in self.device.split(',') if d.strip()])
+            if device_count > 1:
+                self.logger.debug(f"Sending notification to {device_count} devices: {self.device}")
+            else:
+                self.logger.debug(f"Sending notification to device: {self.device}")
+        else:
+            self.logger.debug("Sending notification to all user devices (no device specified)")
         
         # Add emergency parameters if needed
         if priority == 2:

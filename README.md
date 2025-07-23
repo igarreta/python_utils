@@ -157,15 +157,18 @@ print(f"Min free space: {config.get_min_free_space_bytes()} bytes")
 ```
 
 ### pushover_utils
-Pushover.net push notifications with automatic error correction.
+Pushover.net push notifications with automatic error correction and device targeting.
 
 ```python
 from python_utils import PushoverNotifier, send_critical_backup_alert
 
-# Setup (requires ~/etc/pushover.env with credentials)
-notifier = PushoverNotifier("Backup Monitor")
+# Setup (requires ~/etc/pushover.env with credentials and DEFAULT_DEVICE)
+notifier = PushoverNotifier("Backup Monitor")  # Uses DEFAULT_DEVICE from environment
 
-# Send notification
+# Override default device for specific notifications
+notifier_mobile = PushoverNotifier("Backup Monitor", device="my-phone")
+
+# Send notification (uses DEFAULT_DEVICE)
 success = notifier.send("Backup completed successfully", priority=-1)
 
 # Send backup-specific alerts
@@ -176,9 +179,18 @@ notifier.send_backup_summary(
     total_backups=3, successful_backups=2, failed_backups=1, duration=25.3
 )
 
-# Convenience function for critical alerts
+# Convenience function for critical alerts (uses DEFAULT_DEVICE)
 send_critical_backup_alert("CRITICAL: All backup drives offline!")
 ```
+
+**Device Selection Priority:**
+1. Explicit `device` parameter (if provided)
+2. `DEFAULT_DEVICE` from environment file (if present)  
+3. Fallback to all user devices (if no device specified)
+
+**Multi-Device Support:**
+- Single device: `DEFAULT_DEVICE=my-phone`
+- Multiple devices: `DEFAULT_DEVICE=phone,tablet,desktop`
 
 ### logging_utils
 Advanced logging with rotation, formatting, and stream redirection.
@@ -224,6 +236,9 @@ SMTP_TOKEN=your-app-password
 ```bash
 PUSHOVER_TOKEN=your-30-character-app-token
 PUSHOVER_USER=your-30-character-user-key
+DEFAULT_DEVICE=your-device-name
+# Or multiple devices (comma-separated):
+# DEFAULT_DEVICE=device1,device2,device3
 ```
 
 ### Example Application Configuration (`config.yaml`)
