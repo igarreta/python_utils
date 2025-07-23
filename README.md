@@ -85,7 +85,7 @@ SMTP email notifications with TLS/SSL support and professional formatting.
 ```python
 from python_utils import EmailNotifier
 
-# Setup (requires ~/etc/grsrv03.env with SMTP settings)
+# Setup (requires ~/etc/smtp.env with SMTP settings)
 notifier = EmailNotifier()
 
 # Send notification
@@ -223,7 +223,7 @@ print("Error message", file=sys.stderr)  # Logged as ERROR
 
 ## Configuration Files
 
-### SMTP Configuration (`~/etc/grsrv03.env`)
+### SMTP Configuration (`~/etc/smtp.env`)
 ```bash
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587

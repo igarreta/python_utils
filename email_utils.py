@@ -35,7 +35,7 @@ class EmailNotifier:
     and professional formatting for monitoring notifications.
     """
     
-    def __init__(self, env_file_path: str = "~/etc/grsrv03.env", logger: Optional[logging.Logger] = None):
+    def __init__(self, env_file_path: str = "~/etc/smtp.env", logger: Optional[logging.Logger] = None):
         """
         Initialize email notifier with SMTP configuration.
         
@@ -336,7 +336,7 @@ def send_backup_notification(
     errors: List[str], 
     duration: float,
     config_to_emails: Optional[List[str]] = None,
-    env_file_path: str = "~/etc/grsrv03.env",
+    env_file_path: str = "~/etc/smtp.env",
     logger: Optional[logging.Logger] = None
 ) -> bool:
     """
