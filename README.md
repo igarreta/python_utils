@@ -24,6 +24,33 @@ Or install from requirements:
 pip install -r requirements.txt
 ```
 
+### Using as Git Submodule
+
+If using python_utils as a git submodule in your project, add it to your Python path:
+
+```python
+import sys
+import os
+
+# Add python_utils to path (adjust path as needed)
+project_root = os.path.dirname(os.path.realpath(__file__))
+utils_path = os.path.join(project_root, 'python_utils')
+if utils_path not in sys.path:
+    sys.path.append(utils_path)
+
+# Now import normally (from package)
+from python_utils import EmailNotifier, PushoverNotifier
+
+# Or import directly from individual modules
+from email_utils import EmailNotifier
+from pushover_utils import PushoverNotifier
+```
+
+**Requirements:** You still need to install the dependencies:
+```bash
+pip install python-dotenv pydantic PyYAML requests
+```
+
 ## Quick Start
 
 ```python

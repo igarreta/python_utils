@@ -160,6 +160,11 @@ class EmailNotifier:
             recipients = [to_emails.strip()]
         elif isinstance(to_emails, list):
             recipients = [email.strip() for email in to_emails if email.strip()]
+            # If empty list provided, use default from config
+            if not recipients:
+                default_email = self.config.get('to_email')
+                if default_email:
+                    recipients = [default_email.strip()]
         else:
             # Fallback to default from config
             default_email = self.config.get('to_email')
