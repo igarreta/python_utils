@@ -12,7 +12,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="python-utils-igarreta",
-    version="0.1.0",
+    version="1.1.0",
     author="igarreta",
     author_email="",
     description="Comprehensive Python utilities for backup monitoring and system administration",
