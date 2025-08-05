@@ -117,6 +117,9 @@ class AppConfig(BaseModel):
     min_free_space: str = Field(default="100 GB", description="Minimum free space required")
     backup_check_list: List[BackupCheckConfig] = Field(..., min_items=1, description="List of backups to check")
     
+    # Uptime monitoring settings
+    uptime_kuma_url: Optional[str] = Field(default=None, description="Uptime Kuma push URL for heartbeat monitoring")
+    
     
     @field_validator('to_email')
     @classmethod
@@ -208,6 +211,30 @@ class AppConfig(BaseModel):
         
         return v
     
+    @field_validator('uptime_kuma_url')
+    @classmethod
+    def validate_uptime_kuma_url(cls, v):
+        """Validate Uptime Kuma URL format if provided."""
+        if v is None:
+            return v
+            
+        if not isinstance(v, str):
+            raise ValueError("uptime_kuma_url must be a string")
+        
+        v = v.strip()
+        if not v:
+            return None
+            
+        # Basic URL validation
+        if not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError("uptime_kuma_url must start with http:// or https://")
+            
+        # Check for Uptime Kuma push API pattern
+        if '/api/push/' not in v:
+            raise ValueError("uptime_kuma_url must contain '/api/push/' path")
+            
+        return v
+
     def get_min_free_space_bytes(self) -> int:
         """Get minimum free space in bytes."""
         return parse_size_to_bytes(self.min_free_space)

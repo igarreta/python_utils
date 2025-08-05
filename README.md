@@ -11,6 +11,7 @@ This library provides a collection of utilities commonly needed in backup monito
 - **Filesystem utilities** - Directory access, disk usage, and file age checking
 - **Validation utilities** - Pydantic-based configuration validation
 - **Push notifications** - Pushover.net integration for critical alerts
+- **Uptime monitoring** - Uptime Kuma heartbeat notifications with parameter handling
 - **Logging utilities** - Advanced logging with rotation and stream redirection
 
 ## Installation
@@ -60,6 +61,7 @@ from python_utils import (
     is_directory_accessible,
     EmailNotifier,
     PushoverNotifier,
+    send_uptime_kuma_heartbeat,
     AppConfig,
     parse_config_file
 )
@@ -84,6 +86,9 @@ subject, content = notifier.create_backup_summary_email(
 # Push notifications  
 pushover = PushoverNotifier("App Name")
 pushover.send("Test message", priority=-1)
+
+# Uptime monitoring heartbeat
+success = send_uptime_kuma_heartbeat('http://localhost:3001/api/push/TOKEN', ping=1500)
 
 # Configuration validation
 config = parse_config_file("config.yaml")
@@ -187,6 +192,41 @@ print(f"Min free space: {config.get_min_free_space_bytes()} bytes")
 Pushover.net push notifications with automatic error correction and device targeting.
 
 ```python
+from python_utils import send_uptime_kuma_heartbeat
+
+# Basic heartbeat (uses URL defaults or function defaults)
+success = send_uptime_kuma_heartbeat('http://localhost:3001/api/push/TOKEN')
+
+# Custom parameters (override URL and defaults)
+success = send_uptime_kuma_heartbeat(
+    url='http://localhost:3001/api/push/TOKEN?status=down&msg=Error',
+    status='up',          # Overrides URL parameter
+    msg='All systems OK', # Overrides URL parameter
+    ping=1500            # Response time in milliseconds
+)
+
+# With logger for debugging
+import logging
+logger = logging.getLogger(__name__)
+success = send_uptime_kuma_heartbeat(
+    url='http://localhost:3001/api/push/TOKEN',
+    ping=2000,
+    logger=logger
+)
+```
+
+**Parameter Priority System:**
+1. **Function parameters** - Explicit values passed to the function
+2. **URL parameters** - Parameters already present in the URL
+3. **Default values** - Built-in defaults (status='up', msg='OK')
+
+**Error-Safe Design:**
+- Never raises exceptions that could interrupt your application
+- Returns boolean success status for optional handling
+- Logs errors when logger is provided
+- Continues silently when no URL provided
+
+```python
 from python_utils import PushoverNotifier, send_critical_backup_alert
 
 # Setup (requires ~/etc/pushover.env with credentials and DEFAULT_DEVICE)
@@ -275,6 +315,7 @@ to_email:
 pushover_priority: -1
 log_level: INFO
 min_free_space: 100 GB
+uptime_kuma_url: http://localhost:3001/api/push/YOUR-TOKEN-HERE?status=up&msg=OK&ping=
 backup_check_list:
   - name: database
     backup_dir: /mnt/backups/db

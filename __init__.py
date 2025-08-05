@@ -8,7 +8,7 @@ This package provides common utilities for:
 - Configuration validation
 """
 
-__version__ = "0.1.0"
+__version__ = "1.1.0"
 __author__ = "igarreta"
 
 from .size_utils import parse_size_to_bytes, bytes_to_human_readable, validate_size_string, InvalidSizeFormatError
@@ -39,6 +39,10 @@ from .pushover_utils import (
     PushoverNotifier,
     PushoverError,
     send_critical_backup_alert
+)
+from .uptime_kuma_utils import (
+    send_uptime_kuma_heartbeat,
+    UptimeKumaError
 )
 from .logging_utils import (
     StreamLogger,
@@ -82,6 +86,8 @@ __all__ = [
     "PushoverNotifier",
     "PushoverError",
     "send_critical_backup_alert",
+    "send_uptime_kuma_heartbeat",
+    "UptimeKumaError",
     "StreamLogger",
     "LoggingError",
     "setup_logger",
