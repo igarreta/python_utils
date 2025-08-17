@@ -99,6 +99,9 @@ class StreamLogger:
         """
         # Only log if there is a message (not just whitespace or newlines)
         if message.rstrip():
+            # Prevent recursive logging cascade by detecting repeated error patterns
+            if message.count("ERROR:__main__:") > 1:
+                return
             self.logger.log(self.level, message.rstrip())
     
     def flush(self) -> None:
